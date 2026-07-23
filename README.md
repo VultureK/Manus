@@ -1,7 +1,6 @@
 # Vastpad
 ## What is it?
-Have you ever wanted a free open source notepad that has total freedom and is endless? Well, here it is, I made it.
+A fun, useless notepad. Wanna write things down and save them as a .txt? Here it is. Wanna open a .txt file and read it? Here it is.
+Change the font, the font size, and... that's basically it.
 
-So far you can change the font size, the font color, and the font itself. Though, the headings buttons are broke, the one font in the fonts list as well.
-
-So yeah, have fun with this.
+Do what you want with it. This will forever stay free.
