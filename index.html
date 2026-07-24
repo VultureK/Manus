@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manus - Free text editor</title>
-  <!-- Marked: Converts Markdown -> HTML when opening files -->
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Turndown: Converts HTML -> Markdown when saving files -->
+
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,10 +31,10 @@
       --btn-bg: #ffffff;
       --btn-text: #374151;
       --btn-border: #d1d5db;
-      --btn-border-secondary: #d1d5db;
+      --btn-border-secondary: #dde2e7;
       --btn-primary-bg: #fbfbfb;
       --btn-primary-text: #4e5053;
-      --btn-secondary-bg: #f6f6f6;
+      --btn-secondary-bg: #ffffff;
       --btn-secondary-text: #494949;
       --btn-radius: 4px;
       --box-shadow: 0 1px 1px rgba(0,0,0,0.05);
@@ -57,13 +57,13 @@
       --link-color: #60a5fa;
       
       --btn-bg: #2c2c2c;
-      --btn-text: #e0e0e0;
+      --btn-text: #ebebeb;
       --btn-border: #535353;
-      --btn-border-secondary: #555555;
+      --btn-border-secondary: #414141;
       --btn-primary-bg: #2e2e2e;
-      --btn-primary-text: #c7c7c7;
-      --btn-secondary-bg: #3d3d3d;
-      --btn-secondary-text: #ffffff;
+      --btn-primary-text: #dddddd;
+      --btn-secondary-bg: #252525;
+      --btn-secondary-text: #cacaca;
       --editor-shadow: 0 2px 4px rgba(0,0,0,0.0);
     }
 
@@ -109,15 +109,25 @@
     .toolbar {
       font-family: var(--ui-font);
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 0.4rem;
       align-items: center;
       background: var(--bg-toolbar);
       padding: 0.5rem 0.75rem;
       border-bottom: 1px solid var(--border-color);
       box-shadow: var(--box-shadow);
-      z-index: 10;
+      z-index: 100;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--btn-border) transparent;
     }
+
+    .toolbar::-webkit-scrollbar { height: 6px; }
+    .toolbar::-webkit-scrollbar-track { background: transparent; }
+    .toolbar::-webkit-scrollbar-thumb { background: var(--btn-border); border-radius: 4px; }
+
+    .toolbar > * { flex: 0 0 auto; }
 
     :root[data-theme="retro"] .toolbar,
     :root[data-theme="retro"] .status-bar,
@@ -145,6 +155,15 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s ease;
+    }
+
+    #zoomSelect {
+      height: 25px;
+      margin-bottom: -2px;
+    }
+
+    #themeSelect {
+      height: 25px;
     }
 
     :root[data-theme="retro"] button, 
@@ -204,12 +223,57 @@
       margin: 0 2px;
     }
 
+    .dropdown { position: relative; }
+    .dropdown-toggle::after { content: '▾'; margin-left: 0.4rem; font-size: 0.7rem; }
+    .dropdown-menu {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      min-width: 170px;
+      background: var(--bg-toolbar);
+      border: 1px solid var(--border-color);
+      border-radius: var(--btn-radius);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.0);
+      padding: 0.3rem;
+      gap: 0.25rem;
+      z-index: 9999;
+    }
+    .dropdown-menu.open { display: flex; }
+    .dropdown-menu .btn,
+    .dropdown-menu button {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    :root[data-theme="retro"] .dropdown-menu {
+      border: 4px ridge #cccccc;
+    }
+
+    /* Zoom control */
+    .zoom-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .zoom-control .zoom-icon {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Compact theme selector */
+    #themeSelect {
+      padding: 0 0.35rem;
+      font-size: 0.75rem;
+    }
+
     /* Main layout */
     .app-container {
       display: flex;
       flex: 1;
       overflow: hidden;
       position: relative;
+      z-index: 1;
     }
 
     /* Sidebar & notes list manager */
@@ -295,7 +359,7 @@
       width: 100%;
       max-width: 8.27in; 
       min-height: 100%; 
-      padding: 1in; 
+      padding: 0.75in;
       background: var(--bg-editor);
       border: 1px solid var(--border-color);
       border-radius: var(--btn-radius);
@@ -329,12 +393,12 @@
       text-indent: 0; 
     }
 
-    /* Conditional Indenting class */
+    /* goodbye indent fuck you */
     body.no-indent #editor p {
       text-indent: 0 !important;
     }
 
-    /* Footer Stats Bar */
+    /* Footer goal bar */
     .status-bar {
       display: flex;
       justify-content: space-between;
@@ -344,28 +408,17 @@
       padding: 0.4rem 1rem;
       font-size: 0.8rem;
       color: var(--text-muted);
+      z-index: 10;
+      position: relative;
     }
-    .goal-progress {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    progress { width: 100px; height: 8px; border-radius: var(--btn-radius); }
-    progress::-webkit-progress-bar { background-color: var(--border-color); border-radius: var(--btn-radius); }
-    progress::-webkit-progress-value { background-color: var(--link-color); border-radius: var(--btn-radius); }
-    
-    :root[data-theme="retro"] progress { border: 2px inset #ffffff; height: 16px; }
-    :root[data-theme="retro"] progress::-webkit-progress-bar { background-color: #ffffff; border-radius: 0; }
-    :root[data-theme="retro"] progress::-webkit-progress-value { background-color: #00ff00; border-radius: 0; }
-
-    /* Focus / Zen Mode Override */
+    /* Focus override */
     body.focus-mode .toolbar,
     body.focus-mode .sidebar,
     body.focus-mode .status-bar { display: none; }
     body.focus-mode .editor-container { padding: 0.5rem; }
     body.focus-mode #editor { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    /* Mobile Responsive Adjustments */
+    /* Mobile adjustments */
     @media (max-width: 768px) {
       .toolbar { gap: 0.3rem; padding: 0.4rem; }
       .editor-container { padding: 0.5rem; }
@@ -373,7 +426,7 @@
       .sidebar { position: absolute; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.15); }
     }
 
-    /* Print Stylesheet */
+    /* Print stylesheet */
     @media print {
       @page { size: 5in 8in; margin: 0.5in; }
       .toolbar, .sidebar, .status-bar { display: none !important; }
@@ -383,14 +436,29 @@
   </style>
 </head>
 <body>
-  <!-- Top Toolbar -->
+  <!-- Top toolbar -->
   <div class="toolbar">
     <button id="toggleSidebarBtn">☰ Notes</button>
     <span class="separator"></span>
-    <label class="btn primary">Open File<input type="file" id="fileInput" accept=".txt,.md,.html"></label>
-    <button id="saveMdBtn" class="secondary">Save as .md</button>
-    <button id="saveTxtBtn" class="secondary">Save as .txt</button>
-    <button id="savePdfBtn" class="pdf-btn">Save as PDF</button>
+
+    <div class="dropdown" id="fileDropdown">
+      <button class="primary dropdown-toggle" id="fileMenuBtn">File</button>
+      <div class="dropdown-menu" id="fileMenu">
+        <label class="btn">Open File<input type="file" id="fileInput" accept=".txt,.md,.html"></label>
+        <button id="saveMdBtn" class="secondary">Save as Markdown</button>
+        <button id="saveTxtBtn" class="secondary">Save as Text</button>
+        <button id="savePdfBtn" class="pdf-btn">Save as PDF</button>
+      </div>
+    </div>
+
+    <div class="dropdown" id="optionsDropdown">
+      <button class="secondary dropdown-toggle" id="optionsMenuBtn">Options</button>
+      <div class="dropdown-menu" id="optionsMenu">
+        <button id="optToggleIndent" class="secondary">Turn Off Indenting</button>
+        <button id="optBulletList" class="secondary">Insert Bullet List</button>
+        <button id="optNumberedList" class="secondary">Insert Numbered List</button>
+      </div>
+    </div>
 
     <span class="separator"></span>
 
@@ -405,7 +473,18 @@
       <option value="monospace">Mono</option>
     </select>
 
-    <!-- Format Text Options -->
+    <!-- text size selector -->
+    <select id="sizeSelect" title="Font Size">
+      <option value="12px">12px</option>
+      <option value="14px">14px</option>
+      <option value="16px" selected>16px</option>
+      <option value="18px">18px</option>
+      <option value="20px">20px</option>
+      <option value="24px">24px</option>
+      <option value="32px">32px</option>
+    </select>
+
+    <!-- Format text options -->
     <select id="formatBlockSelect" title="Text Style">
       <option value="P" selected>P</option>
       <option value="H1">H1</option>
@@ -416,13 +495,17 @@
     <button class="fmt-btn" onclick="execCmd('bold')" title="Bold">B</button>
     <button class="fmt-btn" onclick="execCmd('italic')" title="Italic" style="font-style: italic;">I</button>
     <input type="color" id="textColor" value="#111827" title="Text Color">
+    
+    <span class="separator"></span>
+
+    <button class="fmt-btn" id="linkBtn" title="Insert Link">🔗</button>
 
     <button id="focusBtn" style="margin-left: auto;">Focus</button>
   </div>
 
-  <!-- Workspace -->
+  <!-- workspace -->
   <div class="app-container">
-    <!-- Browser Notes List Manager Sidebar -->
+    <!-- Browser notes, list manager, sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h3>Saved Notes</h3>
@@ -431,47 +514,35 @@
       <ul class="notes-list" id="notesList"></ul>
     </div>
 
-    <!-- Manuscript Page -->
+    <!-- Main page -->
     <div class="editor-container">
       <div id="editor" contenteditable="true" spellcheck="true"></div>
     </div>
   </div>
 
-  <!-- Word Count & Goal Footer -->
+  <!-- bottom bar -->
   <div class="status-bar">
     <div>
       <span id="wordCount">0 words</span> | 
       <span id="charCount">0 chars</span>
     </div>
     <div class="more-options">
-      <!-- Options Drop-down -->
-      <select id="optionsSelect" title="Editor Options">
-        <option value="" disabled selected>Options...</option>
-        <option value="toggle-indent">Turn Off Indenting</option>
-        <option value="bullet-list">Insert Bullet List</option>
-        <option value="numbered-list">Insert Numbered List</option>
-      </select>
-
-      <select id="zoomSelect" title="Document Zoom">
-        <option value="0.75">75%</option>
-        <option value="1" selected>100%</option>
-        <option value="1.25">125%</option>
-        <option value="1.5">150%</option>
-      </select>
-
-      <span class="separator"></span>
+      <span class="zoom-control" title="Document Zoom">
+        <span class="zoom-icon">Page settings ·</span>
+        <select id="zoomSelect">
+          <option value="0.75">75%</option>
+          <option value="1" selected>100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+        </select>
+      </span>
 
       <!-- UI Theme Selector -->
-    <select id="themeSelect" title="Application Theme">
-      <option value="light" selected>Light</option>
-      <option value="dark">Dark</option>
-      <option value="retro">Early Web</option>
-    </select>
-
-    </div>
-    <div class="goal-progress">
-      <span>Goal (1k):</span>
-      <progress id="goalBar" value="0" max="1000"></progress>
+      <select id="themeSelect" title="Application Theme">
+        <option value="light" selected>Light</option>
+        <option value="dark">Dark</option>
+        <option value="retro">Early Web</option>
+      </select>
     </div>
   </div>
 
@@ -485,7 +556,7 @@
     const themeSelect = document.getElementById('themeSelect');
     const zoomSelect = document.getElementById('zoomSelect');
     const fontSelect = document.getElementById('fontSelect');
-    const optionsSelect = document.getElementById('optionsSelect');
+    const sizeSelect = document.getElementById('sizeSelect');
     const formatBlockSelect = document.getElementById('formatBlockSelect');
     const textColor = document.getElementById('textColor');
     
@@ -497,21 +568,52 @@
 
     const turndownService = new TurndownService({ headingStyle: 'atx' });
 
-    // Local Storage Multi-Note Setup
+    // Local storage multi-note setup
     let notes = JSON.parse(localStorage.getItem('scriptmanu_notes')) || [
       { id: '1', title: 'Welcome to Manus', content: '<h1>Welcome to Manus</h1><p>An extremely simple text editor. Write whatever you want and mess around with the features! Happy writing :)</p>' }
     ];
     let activeNoteId = localStorage.getItem('scriptmanu_active_id') || notes[0].id;
 
     // Load and apply saved theme on startup
-      const savedTheme = localStorage.getItem('scriptmanu_theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      themeSelect.value = savedTheme;
+    const savedTheme = localStorage.getItem('scriptmanu_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeSelect.value = savedTheme;
 
     function saveToLocalStorage() {
       localStorage.setItem('scriptmanu_notes', JSON.stringify(notes));
       localStorage.setItem('scriptmanu_active_id', activeNoteId);
     }
+
+    // Change font size securely supporting scale down/overwriting operations
+    sizeSelect.addEventListener('change', function() {
+      const size = this.value;
+      if (!size) return;
+
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontSize = size;
+    
+        if (!range.collapsed) {
+          const fragment = range.extractContents();
+          
+          fragment.querySelectorAll('*').forEach(el => {
+            if (el.style.fontSize) el.style.fontSize = '';
+          });
+          span.appendChild(fragment);
+          range.insertNode(span);
+        } else {
+          span.appendChild(document.createTextNode('\u200b'));
+          range.insertNode(span);
+        }
+    
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      this.value = "";
+      editor.focus();
+    });
 
     function renderNotesList() {
       notesListEl.innerHTML = '';
@@ -601,39 +703,98 @@
       editor.focus();
     }
 
+    const linkBtn = document.getElementById('linkBtn');
+    
+    linkBtn.addEventListener('click', () => {
+      const url = prompt('Enter the link URL (e.g., https://example.com):');
+      if (url) {
+        execCmd('createLink', url);
+      }
+    });
+
     themeSelect.addEventListener('change', function() {
       const selectedTheme = this.value;
       document.documentElement.setAttribute('data-theme', selectedTheme);
-      localStorage.setItem('scriptmanu_theme', selectedTheme); // Added to save choice
+      localStorage.setItem('scriptmanu_theme', selectedTheme);
     });
 
     zoomSelect.addEventListener('change', function() { editor.style.zoom = this.value; });
     
-    // Font selection retains chosen value name and correctly styles selected text
     fontSelect.addEventListener('change', function() { 
       if (this.value) {
         execCmd('fontName', this.value); 
       }
+      this.value = "";
     });
 
-    // Options drop-down handler for Indent toggling and List functions
-    optionsSelect.addEventListener('change', function() {
-      const action = this.value;
-      if (action === 'toggle-indent') {
-        const isNoIndent = document.body.classList.toggle('no-indent');
-        this.options[1].text = isNoIndent ? "Turn On Indenting" : "Turn Off Indenting";
-      } else if (action === 'bullet-list') {
-        execCmd('insertUnorderedList');
-      } else if (action === 'numbered-list') {
-        execCmd('insertOrderedList');
-      }
-      this.value = ""; // Reset dropdown action state
+    // Options dropdown menu handlers
+    const optionsMenuBtn = document.getElementById('optionsMenuBtn');
+    const optionsMenu = document.getElementById('optionsMenu');
+    const optToggleIndent = document.getElementById('optToggleIndent');
+    const optBulletList = document.getElementById('optBulletList');
+    const optNumberedList = document.getElementById('optNumberedList');
+
+    optionsMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileMenu.classList.remove('open');
+      const rect = optionsMenuBtn.getBoundingClientRect();
+      optionsMenu.style.top = (rect.bottom + 4) + 'px';
+      optionsMenu.style.left = rect.left + 'px';
+      optionsMenu.classList.toggle('open');
     });
 
-    formatBlockSelect.addEventListener('change', function() { execCmd('formatBlock', this.value); });
+    optToggleIndent.addEventListener('click', () => {
+      const isNoIndent = document.body.classList.toggle('no-indent');
+      optToggleIndent.innerText = isNoIndent ? "Turn on Indenting" : "Turn off Indenting";
+      optionsMenu.classList.remove('open');
+    });
+
+    optBulletList.addEventListener('click', () => {
+      execCmd('insertUnorderedList');
+      optionsMenu.classList.remove('open');
+    });
+
+    optNumberedList.addEventListener('click', () => {
+      execCmd('insertOrderedList');
+      optionsMenu.classList.remove('open');
+    });
+
+    formatBlockSelect.addEventListener('change', function() { 
+      execCmd('formatBlock', this.value); 
+      this.value = "P";
+    });
+    
     textColor.addEventListener('input', function() { execCmd('foreColor', this.value); });
 
     toggleSidebarBtn.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+
+    // File dropdown menu
+    const fileMenuBtn = document.getElementById('fileMenuBtn');
+    const fileMenu = document.getElementById('fileMenu');
+
+    fileMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      optionsMenu.classList.remove('open');
+      const rect = fileMenuBtn.getBoundingClientRect();
+      fileMenu.style.top = (rect.bottom + 4) + 'px';
+      fileMenu.style.left = rect.left + 'px';
+      fileMenu.classList.toggle('open');
+    });
+
+    fileMenu.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'LABEL') {
+        fileMenu.classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!fileMenu.contains(e.target) && e.target !== fileMenuBtn) {
+        fileMenu.classList.remove('open');
+      }
+      if (!optionsMenu.contains(e.target) && e.target !== optionsMenuBtn) {
+        optionsMenu.classList.remove('open');
+      }
+    });
 
     focusBtn.addEventListener('click', () => {
       document.body.classList.add('focus-mode');
@@ -647,7 +808,13 @@
       }
     });
 
+    // em dashing 
     editor.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        execCmd('insertUnorderedList');
+      }
+
       if (e.key === 'Tab') {
         e.preventDefault();
         const sel = window.getSelection();
@@ -664,21 +831,40 @@
       }
     });
 
+    editor.addEventListener('input', function(e) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+      
+      const range = selection.getRangeAt(0);
+      const node = range.startContainer;
+  
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.nodeValue;
+        
+        if (text.includes('--')) {
+          const offset = range.startOffset;
+          node.nodeValue = text.replace(/--/g, '—');
+          try {
+            range.setStart(node, Math.max(0, offset - 1));
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } catch (err) {}
+        }
+      }
+      updateBookMetrics();
+      saveCurrentEditorContent();
+      saveToLocalStorage();
+      renderNotesList();
+    });
+
     function updateBookMetrics() {
       const text = editor.innerText.trim();
       const words = text ? text.split(/\s+/).length : 0;
       const chars = text.length;
       document.getElementById('wordCount').innerText = `${words.toLocaleString()} words`;
       document.getElementById('charCount').innerText = `${chars.toLocaleString()} chars`;
-      document.getElementById('goalBar').value = words;
     }
-
-    editor.addEventListener('input', () => {
-      updateBookMetrics();
-      saveCurrentEditorContent();
-      saveToLocalStorage();
-      renderNotesList();
-    });
 
     if (window.innerWidth <= 768) sidebar.classList.add('hidden');
     loadActiveNote();
