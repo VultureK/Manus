@@ -8,11 +8,14 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Turndown: Converts HTML -> Markdown when saving files -->
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; }
     
-    /* Variables for Base/Light Theme */
+    /* Light theme */
     :root {
       --bg-body: #f0f2f5;
       --bg-toolbar: #ffffff;
@@ -28,18 +31,19 @@
       --btn-bg: #ffffff;
       --btn-text: #374151;
       --btn-border: #d1d5db;
-      --btn-primary-bg: #e2e4e7;
-      --btn-primary-text: #292a2e;
-      --btn-secondary-bg: #404b5e;
-      --btn-secondary-text: #ffffff;
-      --btn-radius: 6px;
-      --box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      --editor-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      --btn-border-secondary: #d1d5db;
+      --btn-primary-bg: #fbfbfb;
+      --btn-primary-text: #4e5053;
+      --btn-secondary-bg: #f6f6f6;
+      --btn-secondary-text: #494949;
+      --btn-radius: 4px;
+      --box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+      --editor-shadow: 0 2px 4px rgba(0,0,0,0);
       
-      --ui-font: system-ui, -apple-system, sans-serif;
+      --ui-font: 'IBM Plex Sans', sans-serif;
     }
 
-    /* Dark Theme Overrides */
+    /* Dark theme */
     :root[data-theme="dark"] {
       --bg-body: #121212;
       --bg-toolbar: #1e1e1e;
@@ -54,15 +58,16 @@
       
       --btn-bg: #2c2c2c;
       --btn-text: #e0e0e0;
-      --btn-border: #444444;
-      --btn-primary-bg: #3b82f6;
-      --btn-primary-text: #ffffff;
-      --btn-secondary-bg: #374151;
+      --btn-border: #535353;
+      --btn-border-secondary: #555555;
+      --btn-primary-bg: #2e2e2e;
+      --btn-primary-text: #c7c7c7;
+      --btn-secondary-bg: #3d3d3d;
       --btn-secondary-text: #ffffff;
-      --editor-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      --editor-shadow: 0 2px 4px rgba(0,0,0,0.0);
     }
 
-    /* Early Web Retro Theme Overrides */
+    /* EVIL FUCKIN' WEB theme */
     :root[data-theme="retro"] {
       --bg-body: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" fill="%23000033"/><circle cx="5" cy="5" r="1" fill="%23ffffff"/><circle cx="15" cy="15" r="0.5" fill="%23ffffff"/></svg>');
       --bg-toolbar: #cccccc;
@@ -85,7 +90,7 @@
       
       --btn-radius: 3px;
       --box-shadow: none;
-      --editor-shadow: 5px 5px 0px #000000;
+      --editor-shadow: 0 2px 4px rgba(0,0,0,0.0);
       --ui-font: "Times New Roman", Times, serif;
     }
 
@@ -100,7 +105,7 @@
       flex-direction: column;
     }
 
-    /* Top Toolbar */
+    /* Top toolbar */
     .toolbar {
       font-family: var(--ui-font);
       display: flex;
@@ -117,7 +122,7 @@
     :root[data-theme="retro"] .toolbar,
     :root[data-theme="retro"] .status-bar,
     :root[data-theme="retro"] .sidebar {
-      border: 6px ridge #cccccc;
+      border: 4px ridge #cccccc;
       margin: 2px;
     }
     
@@ -166,8 +171,8 @@
     input[type="color"]::-webkit-color-swatch { border-radius: var(--btn-radius); border: none; }
 
     button.primary, label.btn { background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-border); font-weight: 500; }
-    button.secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border-color: var(--btn-border); }
-    button.pdf-btn { background: #dc2626; color: white; border-color: #b91c1c; }
+    button.secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border-color: var(--btn-border-secondary); }
+    button.pdf-btn { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border-color: var(--btn-border-secondary); }
     
     :root[data-theme="retro"] button.pdf-btn { 
       background: linear-gradient(to bottom, #ff9999 0%, #cc0000 100%);
@@ -199,7 +204,7 @@
       margin: 0 2px;
     }
 
-    /* Main Layout */
+    /* Main layout */
     .app-container {
       display: flex;
       flex: 1;
@@ -207,7 +212,7 @@
       position: relative;
     }
 
-    /* Sidebar / Notes List Manager */
+    /* Sidebar & notes list manager */
     .sidebar {
       width: 260px;
       background: var(--bg-sidebar);
@@ -229,6 +234,10 @@
     }
     .sidebar h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
     
+    #toggleSidebarBtn {
+      border: 0px;
+    }
+
     @keyframes blinker { 50% { opacity: 0; } }
     :root[data-theme="retro"] .sidebar h3 {
       animation: blinker 1.5s linear infinite;
@@ -262,7 +271,7 @@
     .delete-note-btn {
       background: none;
       border: none;
-      color: #ef4444;
+      color: #494949;
       cursor: pointer;
       font-size: 1rem;
       padding: 0 4px;
@@ -270,7 +279,7 @@
     }
     .delete-note-btn:hover { color: #dc2626; transform: none; filter: none; }
 
-    /* Scrollable Container for the Page */
+    /* Scrollable container for the page */
     .editor-container {
       flex: 1;
       padding: 1.5rem;
@@ -281,7 +290,7 @@
       background: var(--bg-editor-container); 
     }
 
-    /* Auto-expanding Book Page */
+    /* Auto expanding book page */
     #editor {
       width: 100%;
       max-width: 8.27in; 
@@ -377,6 +386,7 @@
   <!-- Top Toolbar -->
   <div class="toolbar">
     <button id="toggleSidebarBtn">☰ Notes</button>
+    <span class="separator"></span>
     <label class="btn primary">Open File<input type="file" id="fileInput" accept=".txt,.md,.html"></label>
     <button id="saveMdBtn" class="secondary">Save as .md</button>
     <button id="saveTxtBtn" class="secondary">Save as .txt</button>
@@ -384,24 +394,16 @@
 
     <span class="separator"></span>
 
-    <!-- UI Theme Selector -->
-    <select id="themeSelect" title="Application Theme">
-      <option value="light" selected>Light</option>
-      <option value="dark">Dark</option>
-      <option value="retro">Early Web</option>
+    <select id="fontSelect" title="Font Family">
+      <option value="" disabled selected>Font Family...</option>
+      <option value="Arial">Arial</option>
+      <option value="Calibri">Calibri</option>
+      <option value="'Verdana', sans-serif">Verdana</option>
+      <option value="'Trebuchet', sans-serif">Trebuchet</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Georgia">Georgia</option>
+      <option value="monospace">Mono</option>
     </select>
-
-    <span class="separator"></span>
-
-    <!-- Options Drop-down -->
-    <select id="optionsSelect" title="Editor Options">
-      <option value="" disabled selected>Options...</option>
-      <option value="toggle-indent">Turn Off Indenting</option>
-      <option value="bullet-list">Insert Bullet List</option>
-      <option value="numbered-list">Insert Numbered List</option>
-    </select>
-
-    <span class="separator"></span>
 
     <!-- Format Text Options -->
     <select id="formatBlockSelect" title="Text Style">
@@ -414,26 +416,6 @@
     <button class="fmt-btn" onclick="execCmd('bold')" title="Bold">B</button>
     <button class="fmt-btn" onclick="execCmd('italic')" title="Italic" style="font-style: italic;">I</button>
     <input type="color" id="textColor" value="#111827" title="Text Color">
-
-    <span class="separator"></span>
-
-    <select id="zoomSelect" title="Document Zoom">
-      <option value="0.75">75%</option>
-      <option value="1" selected>100%</option>
-      <option value="1.25">125%</option>
-      <option value="1.5">150%</option>
-    </select>
-
-    <select id="fontSelect" title="Font Family">
-      <option value="" disabled selected>Font Family...</option>
-      <option value="Arial">Arial</option>
-      <option value="Calibri">Calibri</option>
-      <option value="'Verdana', sans-serif">Verdana</option>
-      <option value="'Trebuchet', sans-serif">Trebuchet</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Georgia">Georgia</option>
-      <option value="monospace">Mono</option>
-    </select>
 
     <button id="focusBtn" style="margin-left: auto;">Focus</button>
   </div>
@@ -460,6 +442,32 @@
     <div>
       <span id="wordCount">0 words</span> | 
       <span id="charCount">0 chars</span>
+    </div>
+    <div class="more-options">
+      <!-- Options Drop-down -->
+      <select id="optionsSelect" title="Editor Options">
+        <option value="" disabled selected>Options...</option>
+        <option value="toggle-indent">Turn Off Indenting</option>
+        <option value="bullet-list">Insert Bullet List</option>
+        <option value="numbered-list">Insert Numbered List</option>
+      </select>
+
+      <select id="zoomSelect" title="Document Zoom">
+        <option value="0.75">75%</option>
+        <option value="1" selected>100%</option>
+        <option value="1.25">125%</option>
+        <option value="1.5">150%</option>
+      </select>
+
+      <span class="separator"></span>
+
+      <!-- UI Theme Selector -->
+    <select id="themeSelect" title="Application Theme">
+      <option value="light" selected>Light</option>
+      <option value="dark">Dark</option>
+      <option value="retro">Early Web</option>
+    </select>
+
     </div>
     <div class="goal-progress">
       <span>Goal (1k):</span>
@@ -494,6 +502,11 @@
       { id: '1', title: 'Welcome to Manus', content: '<h1>Welcome to Manus</h1><p>An extremely simple text editor. Write whatever you want and mess around with the features! Happy writing :)</p>' }
     ];
     let activeNoteId = localStorage.getItem('scriptmanu_active_id') || notes[0].id;
+
+    // Load and apply saved theme on startup
+      const savedTheme = localStorage.getItem('scriptmanu_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      themeSelect.value = savedTheme;
 
     function saveToLocalStorage() {
       localStorage.setItem('scriptmanu_notes', JSON.stringify(notes));
@@ -589,7 +602,9 @@
     }
 
     themeSelect.addEventListener('change', function() {
-      document.documentElement.setAttribute('data-theme', this.value);
+      const selectedTheme = this.value;
+      document.documentElement.setAttribute('data-theme', selectedTheme);
+      localStorage.setItem('scriptmanu_theme', selectedTheme); // Added to save choice
     });
 
     zoomSelect.addEventListener('change', function() { editor.style.zoom = this.value; });
