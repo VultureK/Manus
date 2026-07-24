@@ -1,133 +1,705 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vastpad - An endless notepad with pure freedom.</title>
-    <style>
-        /*** Importing fonts real quick ***/
-        @import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Benne&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,300..900;1,300..900&family=Goudy+Bookletter+1911&family=Linden+Hill:ital@0;1&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manus - Free text editor</title>
+  <!-- Marked: Converts Markdown -> HTML when opening files -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Turndown: Converts HTML -> Markdown when saving files -->
+  <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
 
-        /*** Real stuff ***/
-        body {
-            font-family: "Onest", serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: #f5f5f5;
-        }
-        #controls {
-            background: #ffffff;
-            padding: 15px;
-            text-align: center;
-            display: flex;
-            gap: 30px;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-            margin: 10px;
-        }
-        #editor {
-            flex: 1;
-            width: 90%;
-            border: none;
-            outline: none;
-            font-size: 16px;
-            padding: 30px;
-            background: white;
-            font-family: Arial, sans-serif;
-            border-radius: 5px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-            margin: auto;
-            resize: none;
-            height: 80vh;
-        }
-        .heading-button, input, select {
-            border-radius: 10px;
-            border: none;
-            padding: 8px 12px;
-            background: #e0e0e0;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s ease;
-        }
-        .heading-button:hover, input:hover, select:hover {
-            background: #d6d6d6;
-        }
-        #fontSize, #fontColor, #fontFamily {
-            background: #ffffff;
-            padding: 6px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-        }
-        #Fontstxt, #Fontstxt-Serif {
-            background-color: #e8e8e8;
-            font-weight: bold;
-        }
-        .logo {
-            align-items: left;
-        }
-    </style>
+  <style>
+    * { box-sizing: border-box; }
+    
+    /* Variables for Base/Light Theme */
+    :root {
+      --bg-body: #f0f2f5;
+      --bg-toolbar: #ffffff;
+      --bg-sidebar: #f9fafb;
+      --bg-editor-container: #e5e7eb;
+      --bg-editor: #ffffff;
+      --text-main: #333333;
+      --text-editor: #111827;
+      --text-muted: #6b7280;
+      --border-color: #d1d5db;
+      --link-color: #4f46e5;
+      
+      --btn-bg: #ffffff;
+      --btn-text: #374151;
+      --btn-border: #d1d5db;
+      --btn-primary-bg: #e2e4e7;
+      --btn-primary-text: #292a2e;
+      --btn-secondary-bg: #404b5e;
+      --btn-secondary-text: #ffffff;
+      --btn-radius: 6px;
+      --box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      --editor-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      
+      --ui-font: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Dark Theme Overrides */
+    :root[data-theme="dark"] {
+      --bg-body: #121212;
+      --bg-toolbar: #1e1e1e;
+      --bg-sidebar: #181818;
+      --bg-editor-container: #121212;
+      --bg-editor: #1e1e1e;
+      --text-main: #e0e0e0;
+      --text-editor: #d4d4d4;
+      --text-muted: #9ca3af;
+      --border-color: #333333;
+      --link-color: #60a5fa;
+      
+      --btn-bg: #2c2c2c;
+      --btn-text: #e0e0e0;
+      --btn-border: #444444;
+      --btn-primary-bg: #3b82f6;
+      --btn-primary-text: #ffffff;
+      --btn-secondary-bg: #374151;
+      --btn-secondary-text: #ffffff;
+      --editor-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    /* Early Web Retro Theme Overrides */
+    :root[data-theme="retro"] {
+      --bg-body: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" fill="%23000033"/><circle cx="5" cy="5" r="1" fill="%23ffffff"/><circle cx="15" cy="15" r="0.5" fill="%23ffffff"/></svg>');
+      --bg-toolbar: #cccccc;
+      --bg-sidebar: #ffffcc;
+      --bg-editor-container: transparent; 
+      --bg-editor: #ffffff;
+      --text-main: #000000;
+      --text-editor: #000000;
+      --text-muted: #333333;
+      --border-color: #888888;
+      --link-color: #0000ee;
+      
+      --btn-bg: #e0e0e0;
+      --btn-text: #000000;
+      --btn-border: #ffffff;
+      --btn-primary-bg: #d0d0d0;
+      --btn-primary-text: #000000;
+      --btn-secondary-bg: #d0d0d0;
+      --btn-secondary-text: #000000;
+      
+      --btn-radius: 3px;
+      --box-shadow: none;
+      --editor-shadow: 5px 5px 0px #000000;
+      --ui-font: "Times New Roman", Times, serif;
+    }
+
+    body {
+      font-family: var(--ui-font);
+      margin: 0;
+      padding: 0;
+      background: var(--bg-body);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Toolbar */
+    .toolbar {
+      font-family: var(--ui-font);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+      background: var(--bg-toolbar);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--box-shadow);
+      z-index: 10;
+    }
+
+    :root[data-theme="retro"] .toolbar,
+    :root[data-theme="retro"] .status-bar,
+    :root[data-theme="retro"] .sidebar {
+      border: 6px ridge #cccccc;
+      margin: 2px;
+    }
+    
+    :root[data-theme="retro"] .app-container {
+      gap: 5px;
+      padding: 0 5px;
+    }
+
+    button, label.btn, select, input[type="color"] {
+      font-family: var(--ui-font);
+      height: 32px;
+      padding: 0 0.5rem;
+      font-size: 0.8rem;
+      border-radius: var(--btn-radius);
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    :root[data-theme="retro"] button, 
+    :root[data-theme="retro"] label.btn, 
+    :root[data-theme="retro"] select {
+      border-style: outset;
+      border-width: 3px;
+      border-color: #dddddd;
+      background: linear-gradient(to bottom, #ffffff 0%, #cccccc 100%);
+      font-weight: bold;
+    }
+    :root[data-theme="retro"] button:active, 
+    :root[data-theme="retro"] label.btn:active {
+      border-style: inset;
+      background: linear-gradient(to bottom, #cccccc 0%, #ffffff 100%);
+      padding-top: 2px;
+    }
+
+    input[type="color"] {
+      padding: 0;
+      width: 30px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+    input[type="color"]::-webkit-color-swatch { border-radius: var(--btn-radius); border: none; }
+
+    button.primary, label.btn { background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-border); font-weight: 500; }
+    button.secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border-color: var(--btn-border); }
+    button.pdf-btn { background: #dc2626; color: white; border-color: #b91c1c; }
+    
+    :root[data-theme="retro"] button.pdf-btn { 
+      background: linear-gradient(to bottom, #ff9999 0%, #cc0000 100%);
+      color: white; 
+      border-color: #ffcccc; 
+    }
+
+    button.fmt-btn { font-weight: bold; min-width: 30px; padding: 0; }
+    
+    button:hover, label.btn:hover, select:hover, input[type="color"]:hover { 
+      filter: brightness(1.06); 
+      transform: translateY(-1px); 
+    }
+    
+    :root[data-theme="retro"] button:hover, 
+    :root[data-theme="retro"] label.btn:hover, 
+    :root[data-theme="retro"] select:hover, 
+    :root[data-theme="retro"] input[type="color"]:hover { 
+      filter: none; 
+      transform: none; 
+    }
+
+    button:active { transform: translateY(0); }
+    input[type="file"] { display: none; }
+
+    .separator {
+      border-left: 1px solid var(--border-color);
+      height: 20px;
+      margin: 0 2px;
+    }
+
+    /* Main Layout */
+    .app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar / Notes List Manager */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+      z-index: 5;
+    }
+    .sidebar.hidden { transform: translateX(-100%); position: absolute; height: 100%; }
+    
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
+    
+    @keyframes blinker { 50% { opacity: 0; } }
+    :root[data-theme="retro"] .sidebar h3 {
+      animation: blinker 1.5s linear infinite;
+      color: #ff0000;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .notes-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+    .note-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      background: var(--bg-editor);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+    .note-item.active {
+      border-color: var(--link-color);
+      font-weight: bold;
+    }
+    .note-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .delete-note-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 4px;
+      height: auto;
+    }
+    .delete-note-btn:hover { color: #dc2626; transform: none; filter: none; }
+
+    /* Scrollable Container for the Page */
+    .editor-container {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: var(--bg-editor-container); 
+    }
+
+    /* Auto-expanding Book Page */
+    #editor {
+      width: 100%;
+      max-width: 8.27in; 
+      min-height: 100%; 
+      padding: 1in; 
+      background: var(--bg-editor);
+      border: 1px solid var(--border-color);
+      border-radius: var(--btn-radius);
+      outline: none;
+      box-shadow: var(--editor-shadow);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-editor);
+      margin-bottom: 4rem;
+      
+      white-space: pre-wrap; 
+      tab-size: 4; 
+      transition: zoom 0.2s ease, background 0.3s, color 0.3s;
+      zoom: 1;
+    }
+
+    :root[data-theme="retro"] #editor {
+      border: 4px solid #000000;
+    }
+
+    #editor h1 { font-size: 1.6em; margin-top: 1.2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+    #editor h2 { font-size: 1.3em; margin-top: 1em; }
+    #editor h3 { font-size: 1.1em; margin-top: 1em; }
+    
+    #editor p {
+      margin: 0 0 0.5em 0; 
+      text-indent: 1.25em; 
+    }
+    #editor p:first-of-type, #editor h1 + p, #editor h2 + p, #editor h3 + p { 
+      text-indent: 0; 
+    }
+
+    /* Conditional Indenting class */
+    body.no-indent #editor p {
+      text-indent: 0 !important;
+    }
+
+    /* Footer Stats Bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-toolbar);
+      border-top: 1px solid var(--border-color);
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .goal-progress {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    progress { width: 100px; height: 8px; border-radius: var(--btn-radius); }
+    progress::-webkit-progress-bar { background-color: var(--border-color); border-radius: var(--btn-radius); }
+    progress::-webkit-progress-value { background-color: var(--link-color); border-radius: var(--btn-radius); }
+    
+    :root[data-theme="retro"] progress { border: 2px inset #ffffff; height: 16px; }
+    :root[data-theme="retro"] progress::-webkit-progress-bar { background-color: #ffffff; border-radius: 0; }
+    :root[data-theme="retro"] progress::-webkit-progress-value { background-color: #00ff00; border-radius: 0; }
+
+    /* Focus / Zen Mode Override */
+    body.focus-mode .toolbar,
+    body.focus-mode .sidebar,
+    body.focus-mode .status-bar { display: none; }
+    body.focus-mode .editor-container { padding: 0.5rem; }
+    body.focus-mode #editor { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 768px) {
+      .toolbar { gap: 0.3rem; padding: 0.4rem; }
+      .editor-container { padding: 0.5rem; }
+      #editor { padding: 1.5rem 1rem; min-height: auto; }
+      .sidebar { position: absolute; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.15); }
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      @page { size: 5in 8in; margin: 0.5in; }
+      .toolbar, .sidebar, .status-bar { display: none !important; }
+      .app-container, .editor-container { padding: 0 !important; background: white !important; overflow: visible !important; }
+      #editor { border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; margin: 0 !important; min-height: auto !important; background: white !important; color: black !important; zoom: 1 !important; }
+    }
+  </style>
 </head>
 <body>
-    <div id="controls">
-        <img class="logo" src="images/logo_dark.png" alt="Vastpad Logo">
+  <!-- Top Toolbar -->
+  <div class="toolbar">
+    <button id="toggleSidebarBtn">☰ Notes</button>
+    <label class="btn primary">Open File<input type="file" id="fileInput" accept=".txt,.md,.html"></label>
+    <button id="saveMdBtn" class="secondary">Save as .md</button>
+    <button id="saveTxtBtn" class="secondary">Save as .txt</button>
+    <button id="savePdfBtn" class="pdf-btn">Save as PDF</button>
 
-        <input type="number" id="fontSize" value="16" min="10" max="72">
+    <span class="separator"></span>
 
-        <select id="fontFamily">
-            <option id="Fontstxt" value="none">Fonts</option>
-            <option value="Arial">Arial</option>
-            <option value="Figtree">Figtree</option>
-            <option value="Courier New">Courier New</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Onest">Onest</option>
-            <option id="Fontstxt-Serif" value="none">Serif Fonts</option>
-            <option value="EB Garamond">EB Garamond</option>
-            <option value="Crimson Text">Crimson Text</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Goudy Bookletter 1911">Goudy Bookletter 1911 (BROKE)</option>
-            <option value="Linden Hill">Linden Hill</option>
-            <option value="Benne">Benne</option>
-        </select>
+    <!-- UI Theme Selector -->
+    <select id="themeSelect" title="Application Theme">
+      <option value="light" selected>Light</option>
+      <option value="dark">Dark</option>
+      <option value="retro">Early Web</option>
+    </select>
 
-        <input type="color" id="fontColor">
-        <button class="heading-button" onclick="addHeading('h1')">H1</button>
-        <button class="heading-button" onclick="addHeading('h2')">H2</button>
-        <button class="heading-button" onclick="addHeading('h3')">H3</button>
+    <span class="separator"></span>
+
+    <!-- Options Drop-down -->
+    <select id="optionsSelect" title="Editor Options">
+      <option value="" disabled selected>Options...</option>
+      <option value="toggle-indent">Turn Off Indenting</option>
+      <option value="bullet-list">Insert Bullet List</option>
+      <option value="numbered-list">Insert Numbered List</option>
+    </select>
+
+    <span class="separator"></span>
+
+    <!-- Format Text Options -->
+    <select id="formatBlockSelect" title="Text Style">
+      <option value="P" selected>P</option>
+      <option value="H1">H1</option>
+      <option value="H2">H2</option>
+      <option value="H3">H3</option>
+    </select>
+
+    <button class="fmt-btn" onclick="execCmd('bold')" title="Bold">B</button>
+    <button class="fmt-btn" onclick="execCmd('italic')" title="Italic" style="font-style: italic;">I</button>
+    <input type="color" id="textColor" value="#111827" title="Text Color">
+
+    <span class="separator"></span>
+
+    <select id="zoomSelect" title="Document Zoom">
+      <option value="0.75">75%</option>
+      <option value="1" selected>100%</option>
+      <option value="1.25">125%</option>
+      <option value="1.5">150%</option>
+    </select>
+
+    <select id="fontSelect" title="Font Family">
+      <option value="" disabled selected>Font Family...</option>
+      <option value="Arial">Arial</option>
+      <option value="Calibri">Calibri</option>
+      <option value="'Verdana', sans-serif">Verdana</option>
+      <option value="'Trebuchet', sans-serif">Trebuchet</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Georgia">Georgia</option>
+      <option value="monospace">Mono</option>
+    </select>
+
+    <button id="focusBtn" style="margin-left: auto;">Focus</button>
+  </div>
+
+  <!-- Workspace -->
+  <div class="app-container">
+    <!-- Browser Notes List Manager Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>Saved Notes</h3>
+        <button id="newNoteBtn" class="primary" style="height: 26px; padding: 0 0.4rem; font-size: 0.75rem;">+ New</button>
+      </div>
+      <ul class="notes-list" id="notesList"></ul>
     </div>
-    <textarea id="editor" placeholder="Start typing..."></textarea>
 
-    <script>
-        document.getElementById('fontSize').addEventListener('input', function() {
-            document.getElementById('editor').style.fontSize = this.value + 'px';
+    <!-- Manuscript Page -->
+    <div class="editor-container">
+      <div id="editor" contenteditable="true" spellcheck="true"></div>
+    </div>
+  </div>
+
+  <!-- Word Count & Goal Footer -->
+  <div class="status-bar">
+    <div>
+      <span id="wordCount">0 words</span> | 
+      <span id="charCount">0 chars</span>
+    </div>
+    <div class="goal-progress">
+      <span>Goal (1k):</span>
+      <progress id="goalBar" value="0" max="1000"></progress>
+    </div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const fileInput = document.getElementById('fileInput');
+    const saveMdBtn = document.getElementById('saveMdBtn');
+    const saveTxtBtn = document.getElementById('saveTxtBtn');
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    
+    const themeSelect = document.getElementById('themeSelect');
+    const zoomSelect = document.getElementById('zoomSelect');
+    const fontSelect = document.getElementById('fontSelect');
+    const optionsSelect = document.getElementById('optionsSelect');
+    const formatBlockSelect = document.getElementById('formatBlockSelect');
+    const textColor = document.getElementById('textColor');
+    
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const notesListEl = document.getElementById('notesList');
+    const newNoteBtn = document.getElementById('newNoteBtn');
+    const focusBtn = document.getElementById('focusBtn');
+
+    const turndownService = new TurndownService({ headingStyle: 'atx' });
+
+    // Local Storage Multi-Note Setup
+    let notes = JSON.parse(localStorage.getItem('scriptmanu_notes')) || [
+      { id: '1', title: 'Options & Fonts Note', content: '<h1>New Features Integrated</h1><p>Use the Options menu to control paragraph indenting or insert lists, and use the font dropdown to style selected text with the font name remaining visible!</p>' }
+    ];
+    let activeNoteId = localStorage.getItem('scriptmanu_active_id') || notes[0].id;
+
+    function saveToLocalStorage() {
+      localStorage.setItem('scriptmanu_notes', JSON.stringify(notes));
+      localStorage.setItem('scriptmanu_active_id', activeNoteId);
+    }
+
+    function renderNotesList() {
+      notesListEl.innerHTML = '';
+      notes.forEach(note => {
+        const li = document.createElement('li');
+        li.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'note-title';
+        titleSpan.innerText = note.title || 'Untitled Note';
+        titleSpan.addEventListener('click', () => {
+          switchNote(note.id);
+          if (window.innerWidth <= 768) sidebar.classList.add('hidden');
         });
 
-        document.getElementById('fontFamily').addEventListener('change', function() {
-            document.getElementById('editor').style.fontFamily = this.value;
-        });
+        li.appendChild(titleSpan);
 
-        document.getElementById('fontColor').addEventListener('input', function() {
-            document.getElementById('editor').style.color = this.value;
-        });
-
-        function addHeading(type) {
-            let editor = document.getElementById('editor');
-            let headingText = `\n<${type}>Heading</${type}>\n`;
-            editor.value += headingText;
+        if (notes.length > 1) {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete-note-btn';
+          delBtn.innerHTML = '&times;';
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteNote(note.id);
+          });
+          li.appendChild(delBtn);
         }
 
-        document.getElementById('editor').addEventListener('keydown', function(event) {
-            if (event.key === 'Tab') {
-                event.preventDefault();
-                document.execCommand('insertText', false, '\t');
-            }
-        });
-    </script>
+        notesListEl.appendChild(li);
+      });
+    }
+
+    function loadActiveNote() {
+      const current = notes.find(n => n.id === activeNoteId) || notes[0];
+      activeNoteId = current.id;
+      editor.innerHTML = current.content;
+      updateBookMetrics();
+      renderNotesList();
+    }
+
+    function switchNote(id) {
+      saveCurrentEditorContent();
+      activeNoteId = id;
+      loadActiveNote();
+      saveToLocalStorage();
+    }
+
+    function saveCurrentEditorContent() {
+      const current = notes.find(n => n.id === activeNoteId);
+      if (current) {
+        current.content = editor.innerHTML;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = editor.innerHTML;
+        const firstHeading = tempDiv.querySelector('h1, h2, h3');
+        if (firstHeading && firstHeading.innerText.trim()) {
+          current.title = firstHeading.innerText.trim();
+        } else {
+          const text = tempDiv.innerText.trim();
+          current.title = text ? text.substring(0, 20) + '...' : 'Untitled Note';
+        }
+      }
+    }
+
+    newNoteBtn.addEventListener('click', () => {
+      saveCurrentEditorContent();
+      const newId = 'note_' + Date.now();
+      notes.unshift({
+        id: newId,
+        title: 'New Note',
+        content: '<h1>New Note</h1><p>Start writing here...</p>'
+      });
+      activeNoteId = newId;
+      saveToLocalStorage();
+      loadActiveNote();
+      if (window.innerWidth <= 768) sidebar.classList.add('hidden');
+    });
+
+    function deleteNote(id) {
+      notes = notes.filter(n => n.id !== id);
+      if (activeNoteId === id) activeNoteId = notes[0].id;
+      saveToLocalStorage();
+      loadActiveNote();
+    }
+
+    function execCmd(command, value = null) {
+      document.execCommand(command, false, value);
+      editor.focus();
+    }
+
+    themeSelect.addEventListener('change', function() {
+      document.documentElement.setAttribute('data-theme', this.value);
+    });
+
+    zoomSelect.addEventListener('change', function() { editor.style.zoom = this.value; });
+    
+    // Font selection retains chosen value name and correctly styles selected text
+    fontSelect.addEventListener('change', function() { 
+      if (this.value) {
+        execCmd('fontName', this.value); 
+      }
+    });
+
+    // Options drop-down handler for Indent toggling and List functions
+    optionsSelect.addEventListener('change', function() {
+      const action = this.value;
+      if (action === 'toggle-indent') {
+        const isNoIndent = document.body.classList.toggle('no-indent');
+        this.options[1].text = isNoIndent ? "Turn On Indenting" : "Turn Off Indenting";
+      } else if (action === 'bullet-list') {
+        execCmd('insertUnorderedList');
+      } else if (action === 'numbered-list') {
+        execCmd('insertOrderedList');
+      }
+      this.value = ""; // Reset dropdown action state
+    });
+
+    formatBlockSelect.addEventListener('change', function() { execCmd('formatBlock', this.value); });
+    textColor.addEventListener('input', function() { execCmd('foreColor', this.value); });
+
+    toggleSidebarBtn.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+
+    focusBtn.addEventListener('click', () => {
+      document.body.classList.add('focus-mode');
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.body.classList.contains('focus-mode')) {
+        document.body.classList.remove('focus-mode');
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    });
+
+    editor.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          const tabNode = document.createTextNode('\t'); 
+          range.insertNode(tabNode);
+          range.setStartAfter(tabNode);
+          range.setEndAfter(tabNode);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    });
+
+    function updateBookMetrics() {
+      const text = editor.innerText.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      const chars = text.length;
+      document.getElementById('wordCount').innerText = `${words.toLocaleString()} words`;
+      document.getElementById('charCount').innerText = `${chars.toLocaleString()} chars`;
+      document.getElementById('goalBar').value = words;
+    }
+
+    editor.addEventListener('input', () => {
+      updateBookMetrics();
+      saveCurrentEditorContent();
+      saveToLocalStorage();
+      renderNotesList();
+    });
+
+    if (window.innerWidth <= 768) sidebar.classList.add('hidden');
+    loadActiveNote();
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileContent = e.target.result;
+        if (file.name.endsWith('.md')) {
+          editor.innerHTML = marked.parse(fileContent).replace(/>\s+</g, '><'); 
+        } else {
+          editor.innerText = fileContent.replace(/\r\n/g, '\n'); 
+        }
+        updateBookMetrics();
+        saveCurrentEditorContent();
+        saveToLocalStorage();
+        renderNotesList();
+      };
+      reader.readAsText(file);
+    });
+
+    saveMdBtn.addEventListener('click', () => downloadFile(turndownService.turndown(editor.innerHTML), 'manuscript.md', 'text/markdown'));
+    saveTxtBtn.addEventListener('click', () => downloadFile(editor.innerText, 'manuscript.txt', 'text/plain'));
+    savePdfBtn.addEventListener('click', () => window.print());
+
+    function downloadFile(content, filename, contentType) {
+      const blob = new Blob([content], { type: contentType });
+      const anchor = document.createElement('a');
+      anchor.download = filename;
+      anchor.href = window.URL.createObjectURL(blob);
+      anchor.target = '_blank';
+      anchor.click();
+      window.URL.revokeObjectURL(anchor.href);
+    }
+  </script>
 </body>
 </html>
